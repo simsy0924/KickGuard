@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kick Guard AI Demo v2</title>
+  <title>Kick Guard AI Demo v3</title>
 
   <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
 
@@ -20,8 +20,8 @@
     }
 
     .container {
-      max-width: 1100px;
-      margin: 32px auto;
+      max-width: 1180px;
+      margin: 28px auto;
       padding: 20px;
     }
 
@@ -67,7 +67,7 @@
 
     .main-grid {
       display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
+      grid-template-columns: 1.15fr 0.85fr;
       gap: 20px;
     }
 
@@ -103,9 +103,14 @@
       font-size: 15px;
     }
 
+    input[type="file"] {
+      padding: 10px;
+      background: #f9fafb;
+    }
+
     button {
       width: 100%;
-      margin-top: 16px;
+      margin-top: 14px;
       padding: 13px;
       background: #2563eb;
       color: white;
@@ -136,12 +141,20 @@
       background: #ea580c;
     }
 
+    button.green {
+      background: #16a34a;
+    }
+
+    button.green:hover {
+      background: #15803d;
+    }
+
     .camera-wrap {
       position: relative;
       overflow: hidden;
       border-radius: 16px;
       background: #111827;
-      min-height: 260px;
+      min-height: 280px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -149,7 +162,7 @@
 
     video, canvas {
       width: 100%;
-      max-height: 360px;
+      max-height: 380px;
       object-fit: cover;
     }
 
@@ -230,6 +243,13 @@
       transition: width 0.4s ease;
     }
 
+    .match-bar {
+      height: 100%;
+      width: 0%;
+      background: #16a34a;
+      transition: width 0.4s ease;
+    }
+
     ul {
       padding-left: 22px;
       line-height: 1.7;
@@ -265,14 +285,69 @@
       gap: 12px;
     }
 
-    @media (max-width: 900px) {
+    .three-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .photo-area {
+      display: grid;
+      grid-template-columns: 170px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .photo-preview-box {
+      border: 1px dashed #cbd5e1;
+      border-radius: 14px;
+      min-height: 170px;
+      background: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .photo-preview-box img {
+      width: 100%;
+      height: 170px;
+      object-fit: cover;
+      display: none;
+    }
+
+    .photo-preview-text {
+      color: #64748b;
+      padding: 12px;
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    .mono {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      color: #475569;
+    }
+
+    @media (max-width: 960px) {
       .main-grid {
         grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 620px) {
-      .two-cols {
+    @media (max-width: 700px) {
+      .two-cols, .three-cols, .photo-area {
         grid-template-columns: 1fr;
       }
 
@@ -286,21 +361,52 @@
   <div class="container">
     <div class="header">
       <div class="logo">🛴 Kick Guard</div>
-      <h1>Kick Guard AI 인증 시스템</h1>
-      <p>미성년자 무면허 전동킥보드 운전 방지 모의 기업 시연 프로그램</p>
+      <h1>Kick Guard AI 본인 인증 시스템</h1>
+      <p>기준 사진과 현재 얼굴을 비교해 미성년자·무면허·타인 계정 사용을 차단하는 시연 프로그램</p>
       <div>
-        <span class="tag">카메라 권한 요청 수정</span>
-        <span class="tag">얼굴 인식</span>
+        <span class="tag">기준 사진 등록</span>
+        <span class="tag">얼굴 일치도</span>
+        <span class="tag">다중 프레임 분석</span>
         <span class="tag">AI 나이 추정</span>
         <span class="tag">면허 확인</span>
-        <span class="tag">스쿨존 지오펜싱</span>
+        <span class="tag">스쿨존 감속</span>
       </div>
     </div>
 
     <div class="main-grid">
       <div class="left-grid">
         <div class="card">
-          <h2>1. 얼굴 인식 인증</h2>
+          <h2>1. 기준 사진 등록</h2>
+
+          <div class="photo-area">
+            <div class="photo-preview-box">
+              <img id="referencePreview" alt="기준 사진 미리보기" />
+              <div id="referencePreviewText" class="photo-preview-text">
+                기준 사진을 업로드하면<br>여기에 표시됩니다.
+              </div>
+            </div>
+
+            <div>
+              <label for="referencePhoto">본인 기준 사진</label>
+              <input type="file" id="referencePhoto" accept="image/*" />
+
+              <button class="green" onclick="registerReferenceFace()">기준 사진 AI 분석/등록</button>
+
+              <div id="referenceStatus" class="face-status">
+                상태: 아직 기준 사진을 등록하지 않았습니다.
+              </div>
+
+              <p class="small">
+                기준 사진은 서버로 업로드되지 않고, 브라우저 내부에서만 얼굴 특징값으로 변환됩니다.
+                실제 서비스에서는 가입 시 등록한 본인 사진 또는 신분 인증 정보와 비교하는 방식으로 설명할 수 있습니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>2. 실시간 얼굴 확인</h2>
+
           <div class="camera-wrap">
             <div id="cameraPlaceholder" class="camera-placeholder">
               카메라 시작을 누르면 브라우저가 카메라 권한을 요청합니다.<br />
@@ -312,23 +418,34 @@
 
           <div class="two-cols">
             <button class="secondary" onclick="startCamera()">카메라 시작</button>
-            <button onclick="analyzeFace()">AI 얼굴 분석</button>
+            <button onclick="compareLiveFace()">현재 얼굴과 기준 사진 비교</button>
           </div>
 
-          <button class="warning" onclick="demoFaceResult()">시연용 얼굴 인식 결과 넣기</button>
+          <div class="three-cols">
+            <button class="warning" onclick="demoMatch(92, 20)">시연: 본인 일치</button>
+            <button class="warning" onclick="demoMatch(58, 16)">시연: 애매함</button>
+            <button class="warning" onclick="demoMatch(28, 14)">시연: 불일치</button>
+          </div>
 
           <div id="faceStatus" class="face-status">
             상태: 아직 카메라를 시작하지 않았습니다.
           </div>
 
+          <div class="score-box">
+            <strong>얼굴 일치도: <span id="matchText">0</span>%</strong>
+            <div class="score-bar-bg">
+              <div id="matchBar" class="match-bar"></div>
+            </div>
+            <div id="matchDetail" class="small">기준 사진 등록 후 카메라 얼굴과 비교할 수 있습니다.</div>
+          </div>
+
           <div id="cameraGuide" class="notice">
-            카메라 권한 요청이 안 뜨면, 파일을 브라우저가 아닌 파일 미리보기 앱에서 연 것일 수 있습니다.
-            가능하면 Chrome/Edge에서 직접 열거나, PC에서는 간단한 로컬 서버로 실행하세요.
+            얼굴 인식이 오락가락하는 것을 줄이기 위해 한 번의 사진이 아니라 여러 프레임을 분석해 가장 안정적인 결과를 사용합니다.
           </div>
         </div>
 
         <div class="card">
-          <h2>2. 사용자 정보 입력</h2>
+          <h2>3. 사용자 정보 입력</h2>
 
           <label for="age">가입 정보상 나이</label>
           <input type="number" id="age" value="15" min="1" max="100" />
@@ -341,6 +458,17 @@
             <option value="no">얼굴 미인식</option>
             <option value="yes">얼굴 인식 성공</option>
           </select>
+
+          <label for="faceMatched">기준 사진과의 얼굴 일치 여부</label>
+          <select id="faceMatched">
+            <option value="unknown">아직 비교 안 함</option>
+            <option value="yes">본인으로 판단</option>
+            <option value="maybe">추가 확인 필요</option>
+            <option value="no">불일치로 판단</option>
+          </select>
+
+          <label for="matchScoreInput">얼굴 일치도 점수</label>
+          <input type="number" id="matchScoreInput" value="0" min="0" max="100" />
 
           <label for="license">면허 보유 여부</label>
           <select id="license">
@@ -369,7 +497,7 @@
       </div>
 
       <div class="card">
-        <div class="result-title">3. Kick Guard 판단 결과</div>
+        <div class="result-title">4. Kick Guard 판단 결과</div>
         <div id="status" class="status block">탑승 차단</div>
 
         <div class="score-box">
@@ -387,9 +515,13 @@
 
         <h3>시스템 설명</h3>
         <p class="small">
-          Kick Guard는 탑승 전 얼굴 인식, 나이 추정, 면허 보유 여부, 본인인증 결과, 위치 정보를 종합하여
-          위험도 점수를 계산합니다. 위험도가 높거나 면허 조건을 만족하지 못하면 킥보드를 잠그고,
-          스쿨존에서는 자동으로 최고 속도를 낮춥니다.
+          Kick Guard는 가입자 기준 사진과 현재 탑승자의 얼굴을 비교하여 본인 여부를 확인합니다.
+          이후 AI 나이 추정값, 면허 보유 여부, 본인인증 결과, 스쿨존 여부를 종합해 위험도 점수를 계산합니다.
+        </p>
+
+        <p class="small">
+          얼굴 일치도 기준 예시: 70% 이상 본인 가능성 높음, 50~69% 추가 확인 필요, 50% 미만 불일치 의심.
+          실제 서비스에서는 보안을 위해 휴대폰 본인인증, 면허 인증, 이상 사용 탐지를 함께 적용해야 합니다.
         </p>
 
         <p class="small">
@@ -403,16 +535,131 @@
   <script>
     let modelsLoaded = false;
     let streamStarted = false;
+    let referenceDescriptor = null;
+    let referenceImageElement = null;
 
     const video = document.getElementById("video");
     const overlay = document.getElementById("overlay");
     const faceStatus = document.getElementById("faceStatus");
+    const referenceStatus = document.getElementById("referenceStatus");
     const placeholder = document.getElementById("cameraPlaceholder");
     const cameraGuide = document.getElementById("cameraGuide");
+    const referencePhotoInput = document.getElementById("referencePhoto");
+    const referencePreview = document.getElementById("referencePreview");
+    const referencePreviewText = document.getElementById("referencePreviewText");
+
+    referencePhotoInput.addEventListener("change", () => {
+      const file = referencePhotoInput.files[0];
+      if (!file) return;
+
+      const url = URL.createObjectURL(file);
+      referencePreview.src = url;
+      referencePreview.style.display = "block";
+      referencePreviewText.style.display = "none";
+
+      const img = new Image();
+      img.onload = () => {
+        referenceImageElement = img;
+        referenceStatus.innerHTML = "상태: 사진을 불러왔습니다. '기준 사진 AI 분석/등록'을 눌러주세요.";
+      };
+      img.src = url;
+
+      referenceDescriptor = null;
+      document.getElementById("faceMatched").value = "unknown";
+      updateMatchScore(0, "새 기준 사진이 선택되었습니다. 아직 얼굴 특징값을 등록하지 않았습니다.");
+      judge();
+    });
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
     function showCameraGuide(message, isError = false) {
       cameraGuide.className = isError ? "notice error" : "notice";
       cameraGuide.innerHTML = message;
+    }
+
+    async function loadModels() {
+      if (modelsLoaded) return true;
+
+      if (typeof faceapi === "undefined") {
+        const msg = "얼굴 인식 라이브러리를 불러오지 못했습니다. 인터넷 연결이 필요할 수 있습니다.";
+        referenceStatus.innerHTML = "상태: " + msg;
+        faceStatus.innerHTML = "상태: " + msg;
+        return false;
+      }
+
+      try {
+        referenceStatus.innerHTML = "상태: AI 얼굴 인식 모델을 불러오는 중입니다...";
+        faceStatus.innerHTML = "상태: AI 얼굴 인식 모델을 불러오는 중입니다...";
+
+        const modelUrl = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/";
+        await faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl);
+        await faceapi.nets.faceLandmark68Net.loadFromUri(modelUrl);
+        await faceapi.nets.faceRecognitionNet.loadFromUri(modelUrl);
+        await faceapi.nets.ageGenderNet.loadFromUri(modelUrl);
+
+        modelsLoaded = true;
+        referenceStatus.innerHTML = "상태: AI 모델 준비 완료. 기준 사진을 등록할 수 있습니다.";
+        faceStatus.innerHTML = "상태: AI 모델 준비 완료. 카메라 얼굴을 비교할 수 있습니다.";
+        return true;
+      } catch (error) {
+        console.error(error);
+        const msg = "모델 로딩 실패. 학교 와이파이 제한 또는 인터넷 문제일 수 있습니다. 시연용 버튼 사용 가능.";
+        referenceStatus.innerHTML = "상태: " + msg;
+        faceStatus.innerHTML = "상태: " + msg;
+        return false;
+      }
+    }
+
+    function getDetectorOptions() {
+      return new faceapi.TinyFaceDetectorOptions({
+        inputSize: 320,
+        scoreThreshold: 0.35
+      });
+    }
+
+    async function detectFullFace(input) {
+      return await faceapi
+        .detectSingleFace(input, getDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceDescriptor()
+        .withAgeAndGender();
+    }
+
+    async function registerReferenceFace() {
+      if (!referenceImageElement) {
+        referenceStatus.innerHTML = "상태: 먼저 기준 사진 파일을 선택해주세요.";
+        return;
+      }
+
+      const modelReady = await loadModels();
+      if (!modelReady) return;
+
+      try {
+        referenceStatus.innerHTML = "상태: 기준 사진에서 얼굴을 분석하는 중입니다...";
+
+        const result = await detectFullFace(referenceImageElement);
+
+        if (!result) {
+          referenceDescriptor = null;
+          referenceStatus.innerHTML = "상태: 기준 사진에서 얼굴을 찾지 못했습니다. 얼굴이 크게 나온 정면 사진을 사용해주세요.";
+          return;
+        }
+
+        referenceDescriptor = result.descriptor;
+        const estimatedAge = Math.round(result.age);
+
+        referenceStatus.innerHTML =
+          "상태: 기준 사진 등록 완료<br>" +
+          "기준 사진 AI 추정 나이: 약 " + estimatedAge + "세<br>" +
+          "<span class='pill'>얼굴 특징값 등록됨</span>";
+
+        showCameraGuide("기준 사진 등록 완료. 이제 카메라를 켠 뒤 현재 얼굴과 기준 사진을 비교할 수 있습니다.");
+      } catch (error) {
+        console.error(error);
+        referenceStatus.innerHTML = "상태: 기준 사진 분석 중 오류가 발생했습니다. 오류명: " + error.name;
+      }
     }
 
     async function startCamera() {
@@ -421,20 +668,14 @@
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         faceStatus.innerHTML = "상태: 이 실행 환경에서는 카메라 API를 사용할 수 없습니다.";
         showCameraGuide(
-          "카메라 API가 보이지 않습니다. HTML 파일을 파일 미리보기 앱이 아니라 Chrome/Edge에서 열어보세요. " +
-          "PC에서는 파일이 있는 폴더에서 <b>python -m http.server 8000</b> 실행 후 <b>http://localhost:8000/kick_guard_ai_demo_v2.html</b>로 접속하면 안정적입니다.",
+          "HTML 파일을 파일 미리보기 앱이 아니라 Chrome/Edge에서 열어보세요. " +
+          "GitHub Pages처럼 HTTPS 주소에서 실행하면 카메라 권한 요청이 더 안정적입니다.",
           true
         );
         return;
       }
 
       try {
-        /*
-          중요 수정:
-          이전 버전은 얼굴 인식 모델 로딩과 카메라 요청이 섞여 있어서,
-          환경에 따라 권한 요청 전에 멈춰 보일 수 있었습니다.
-          이번 버전은 getUserMedia를 가장 먼저 실행해서 권한 요청을 확실히 띄웁니다.
-        */
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: "user",
@@ -449,10 +690,8 @@
         placeholder.style.display = "none";
         streamStarted = true;
 
-        faceStatus.innerHTML = "상태: 카메라 권한 허용 완료. 이제 AI 얼굴 분석을 누르세요.";
-        showCameraGuide(
-          "카메라 연결 성공. 얼굴 분석 모델 로딩이 실패해도 카메라 권한과 화면 표시는 정상 작동합니다."
-        );
+        faceStatus.innerHTML = "상태: 카메라 연결 완료. 현재 얼굴과 기준 사진을 비교할 수 있습니다.";
+        showCameraGuide("카메라 연결 성공. 흔들림을 줄이기 위해 밝은 곳에서 얼굴을 화면 중앙에 맞춰주세요.");
 
         video.onloadedmetadata = () => {
           overlay.width = video.clientWidth;
@@ -465,126 +704,199 @@
 
         if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
           faceStatus.innerHTML = "상태: 카메라 권한이 거부되었습니다.";
-          showCameraGuide(
-            "브라우저 주소창 왼쪽의 권한 설정에서 카메라를 허용한 뒤 다시 시도하세요.",
-            true
-          );
+          showCameraGuide("브라우저 주소창 왼쪽의 권한 설정에서 카메라를 허용한 뒤 다시 시도하세요.", true);
         } else if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
           faceStatus.innerHTML = "상태: 사용할 수 있는 카메라를 찾지 못했습니다.";
-          showCameraGuide(
-            "기기에 카메라가 없거나 다른 앱이 카메라를 사용 중일 수 있습니다.",
-            true
-          );
+          showCameraGuide("기기에 카메라가 없거나 다른 앱이 카메라를 사용 중일 수 있습니다.", true);
         } else if (!window.isSecureContext) {
           faceStatus.innerHTML = "상태: 보안 실행 환경이 아니라 카메라가 차단되었습니다.";
-          showCameraGuide(
-            "브라우저 카메라는 보통 HTTPS 또는 localhost 환경에서 안정적으로 작동합니다. PC에서는 <b>python -m http.server 8000</b>으로 실행하는 방식을 추천합니다.",
-            true
-          );
+          showCameraGuide("브라우저 카메라는 보통 HTTPS 또는 localhost 환경에서 안정적으로 작동합니다. GitHub Pages 사용을 추천합니다.", true);
         } else {
           faceStatus.innerHTML = "상태: 카메라 시작 중 오류가 발생했습니다. 오류명: " + error.name;
-          showCameraGuide(
-            "오류 메시지: " + error.message + "<br>시연이 급하면 주황색 시연용 버튼을 사용하세요.",
-            true
-          );
+          showCameraGuide("오류 메시지: " + error.message + "<br>시연이 급하면 주황색 시연 버튼을 사용하세요.", true);
         }
       }
     }
 
-    async function loadModels() {
-      if (modelsLoaded) return true;
+    function distanceToSimilarity(distance) {
+      /*
+        face-api의 얼굴 거리값은 낮을수록 같은 사람일 가능성이 높습니다.
+        발표용으로 이해하기 쉽게 0~100% 일치도로 변환합니다.
+        이 값은 실제 법적/보안 인증 점수가 아니라 시연용 표시값입니다.
+      */
+      let similarity;
 
-      if (typeof faceapi === "undefined") {
-        faceStatus.innerHTML += "<br>참고: 얼굴 인식 라이브러리를 아직 불러오지 못했습니다. 인터넷 연결이 필요할 수 있습니다.";
-        return false;
+      if (distance <= 0.35) {
+        similarity = 96 - (distance / 0.35) * 6; // 약 90~96%
+      } else if (distance <= 0.50) {
+        similarity = 90 - ((distance - 0.35) / 0.15) * 12; // 약 78~90%
+      } else if (distance <= 0.62) {
+        similarity = 78 - ((distance - 0.50) / 0.12) * 13; // 약 65~78%
+      } else if (distance <= 0.80) {
+        similarity = 65 - ((distance - 0.62) / 0.18) * 35; // 약 30~65%
+      } else {
+        similarity = Math.max(0, 30 - ((distance - 0.80) / 0.40) * 30);
       }
 
-      try {
-        faceStatus.innerHTML += "<br>AI 얼굴 인식 모델을 불러오는 중입니다...";
-        const modelUrl = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/";
-        await faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl);
-        await faceapi.nets.ageGenderNet.loadFromUri(modelUrl);
-        modelsLoaded = true;
-        faceStatus.innerHTML = "상태: 카메라와 AI 얼굴 인식 모델 준비 완료. AI 얼굴 분석을 누르세요.";
-        return true;
-      } catch (error) {
-        console.error(error);
-        faceStatus.innerHTML += "<br>참고: 모델 로딩 실패. 학교 와이파이 제한 또는 인터넷 문제일 수 있습니다. 시연용 버튼 사용 가능.";
-        return false;
-      }
+      return Math.max(0, Math.min(100, Math.round(similarity)));
     }
 
-    async function analyzeFace() {
+    function classifyMatch(similarity) {
+      if (similarity >= 70) return "yes";
+      if (similarity >= 50) return "maybe";
+      return "no";
+    }
+
+    function updateMatchScore(score, detail) {
+      document.getElementById("matchText").textContent = score;
+      document.getElementById("matchBar").style.width = score + "%";
+      document.getElementById("matchScoreInput").value = score;
+      document.getElementById("matchDetail").innerHTML = detail;
+    }
+
+    function drawDetectionBox(result) {
+      const ctx = overlay.getContext("2d");
+      overlay.width = video.clientWidth;
+      overlay.height = video.clientHeight;
+      ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+      if (!result || !result.detection) return;
+
+      const box = result.detection.box;
+      const scaleX = video.clientWidth / video.videoWidth;
+      const scaleY = video.clientHeight / video.videoHeight;
+
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "#22c55e";
+      ctx.strokeRect(box.x * scaleX, box.y * scaleY, box.width * scaleX, box.height * scaleY);
+
+      ctx.fillStyle = "rgba(34, 197, 94, 0.9)";
+      ctx.fillRect(box.x * scaleX, Math.max(0, box.y * scaleY - 28), 150, 26);
+      ctx.fillStyle = "white";
+      ctx.font = "bold 14px Arial";
+      ctx.fillText("Face detected", box.x * scaleX + 8, Math.max(18, box.y * scaleY - 10));
+    }
+
+    async function compareLiveFace() {
+      if (!referenceDescriptor) {
+        faceStatus.innerHTML = "상태: 먼저 기준 사진을 업로드하고 AI 분석/등록을 해주세요.";
+        return;
+      }
+
       if (!streamStarted) {
         faceStatus.innerHTML = "상태: 먼저 카메라 시작 버튼을 눌러주세요.";
         return;
       }
 
       const modelReady = await loadModels();
-      if (!modelReady) {
-        faceStatus.innerHTML += "<br>AI 모델이 준비되지 않아 실제 얼굴 분석은 진행할 수 없습니다.";
-        return;
-      }
+      if (!modelReady) return;
 
       try {
-        faceStatus.innerHTML = "상태: 얼굴을 분석하는 중입니다...";
+        faceStatus.innerHTML = "상태: 여러 프레임을 분석하는 중입니다. 얼굴을 화면 중앙에 유지해주세요...";
 
-        const result = await faceapi
-          .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.45 }))
-          .withAgeAndGender();
+        const samples = [];
+        const totalTries = 7;
 
-        const ctx = overlay.getContext("2d");
-        ctx.clearRect(0, 0, overlay.width, overlay.height);
+        for (let i = 0; i < totalTries; i++) {
+          const result = await detectFullFace(video);
 
-        if (!result) {
+          if (result) {
+            const distance = faceapi.euclideanDistance(referenceDescriptor, result.descriptor);
+            const similarity = distanceToSimilarity(distance);
+
+            samples.push({
+              result,
+              distance,
+              similarity,
+              age: result.age,
+              score: result.detection.score || 0
+            });
+          }
+
+          await sleep(180);
+        }
+
+        if (samples.length === 0) {
           document.getElementById("faceDetected").value = "no";
-          faceStatus.innerHTML = "상태: 얼굴을 찾지 못했습니다. 밝은 곳에서 정면을 보고 다시 시도하세요.";
+          document.getElementById("faceMatched").value = "unknown";
+          updateMatchScore(0, "카메라 화면에서 얼굴을 찾지 못했습니다. 밝은 곳에서 정면을 보고 다시 시도하세요.");
+          faceStatus.innerHTML = "상태: 얼굴 인식 실패. " + totalTries + "회 시도했지만 얼굴을 찾지 못했습니다.";
           judge();
           return;
         }
 
-        const box = result.detection.box;
+        /*
+          인식이 오락가락하는 문제를 줄이기 위해
+          여러 번 측정한 결과 중 가장 낮은 거리값, 즉 가장 잘 맞은 프레임을 사용합니다.
+        */
+        samples.sort((a, b) => a.distance - b.distance);
+        const best = samples[0];
+        const avgAge = Math.round(samples.reduce((sum, s) => sum + s.age, 0) / samples.length);
+        const similarity = best.similarity;
+        const matchClass = classifyMatch(similarity);
 
-        overlay.width = video.clientWidth;
-        overlay.height = video.clientHeight;
-
-        const scaleX = video.clientWidth / video.videoWidth;
-        const scaleY = video.clientHeight / video.videoHeight;
-
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = "#22c55e";
-        ctx.strokeRect(box.x * scaleX, box.y * scaleY, box.width * scaleX, box.height * scaleY);
-
-        const estimatedAge = Math.round(result.age);
-        document.getElementById("faceAge").value = estimatedAge;
         document.getElementById("faceDetected").value = "yes";
+        document.getElementById("faceMatched").value = matchClass;
+        document.getElementById("faceAge").value = avgAge;
+
+        drawDetectionBox(best.result);
+
+        updateMatchScore(
+          similarity,
+          "얼굴 거리값: <span class='mono'>" + best.distance.toFixed(3) + "</span> · " +
+          "성공 프레임: " + samples.length + "/" + totalTries + " · " +
+          "평균 AI 추정 나이: 약 " + avgAge + "세"
+        );
+
+        let matchText = "";
+        if (matchClass === "yes") {
+          matchText = "본인 가능성이 높습니다.";
+          document.getElementById("auth").value = "success";
+        } else if (matchClass === "maybe") {
+          matchText = "비슷하지만 추가 본인인증이 필요합니다.";
+        } else {
+          matchText = "기준 사진과 다른 사람일 가능성이 높습니다.";
+        }
 
         faceStatus.innerHTML =
-          "상태: 얼굴 인식 성공<br>" +
-          "AI 추정 나이: 약 " + estimatedAge + "세<br>" +
-          "※ 실제 서비스에서는 이 결과를 면허 인증, 본인인증 결과와 함께 비교합니다.";
+          "상태: 얼굴 비교 완료<br>" +
+          "얼굴 일치도: " + similarity + "%<br>" +
+          "판정: " + matchText + "<br>" +
+          "AI 추정 나이: 약 " + avgAge + "세";
 
         judge();
       } catch (error) {
         console.error(error);
-        faceStatus.innerHTML = "상태: 얼굴 분석 중 오류가 발생했습니다. 오류명: " + error.name;
+        faceStatus.innerHTML = "상태: 얼굴 비교 중 오류가 발생했습니다. 오류명: " + error.name;
       }
     }
 
-    function demoFaceResult() {
-      const examples = [
-        { age: 14, message: "시연 결과: AI가 미성년자로 추정했습니다." },
-        { age: 16, message: "시연 결과: AI가 면허 취득 가능 연령 경계로 추정했습니다." },
-        { age: 21, message: "시연 결과: AI가 성인으로 추정했습니다." }
-      ];
-
-      const selected = examples[Math.floor(Math.random() * examples.length)];
-      document.getElementById("faceAge").value = selected.age;
+    function demoMatch(score, age) {
+      const matchClass = classifyMatch(score);
       document.getElementById("faceDetected").value = "yes";
+      document.getElementById("faceMatched").value = matchClass;
+      document.getElementById("faceAge").value = age;
+
+      if (matchClass === "yes") {
+        document.getElementById("auth").value = "success";
+      } else {
+        document.getElementById("auth").value = "fail";
+      }
+
+      updateMatchScore(
+        score,
+        "시연용 얼굴 일치도입니다. 실제 분석이 불안정할 때 발표 흐름을 이어가기 위한 예비 기능입니다."
+      );
+
+      let msg = "추가 확인 필요";
+      if (matchClass === "yes") msg = "본인으로 판단";
+      if (matchClass === "no") msg = "불일치로 판단";
+
       faceStatus.innerHTML =
-        "상태: 얼굴 인식 시연 모드 실행<br>" +
-        selected.message + "<br>" +
-        "AI 추정 나이: 약 " + selected.age + "세";
+        "상태: 시연용 얼굴 비교 결과 적용<br>" +
+        "얼굴 일치도: " + score + "%<br>" +
+        "판정: " + msg + "<br>" +
+        "AI 추정 나이: 약 " + age + "세";
 
       judge();
     }
@@ -593,6 +905,8 @@
       const age = Number(document.getElementById("age").value);
       const faceAge = Number(document.getElementById("faceAge").value);
       const faceDetected = document.getElementById("faceDetected").value;
+      const faceMatched = document.getElementById("faceMatched").value;
+      const matchScore = Number(document.getElementById("matchScoreInput").value);
       const license = document.getElementById("license").value;
       const auth = document.getElementById("auth").value;
       const school = document.getElementById("school").value;
@@ -602,9 +916,22 @@
 
       if (faceDetected === "no") {
         score += 30;
-        reasons.push("얼굴 인식이 완료되지 않아 타인 사용 여부를 확인할 수 없습니다.");
+        reasons.push("얼굴 인식이 완료되지 않아 실제 탑승자가 누구인지 확인할 수 없습니다.");
       } else {
-        reasons.push("얼굴 인식이 완료되어 AI 나이 추정값을 판단에 반영했습니다.");
+        reasons.push("카메라 얼굴 인식이 완료되어 AI 나이 추정값을 판단에 반영했습니다.");
+      }
+
+      if (faceMatched === "unknown") {
+        score += 15;
+        reasons.push("기준 사진과 현재 얼굴의 일치도 비교가 아직 완료되지 않았습니다.");
+      } else if (faceMatched === "yes") {
+        reasons.push("기준 사진과 현재 얼굴의 일치도가 높아 본인 가능성이 높습니다. 일치도: " + matchScore + "%");
+      } else if (faceMatched === "maybe") {
+        score += 25;
+        reasons.push("기준 사진과 현재 얼굴이 애매하게 일치하여 추가 본인인증이 필요합니다. 일치도: " + matchScore + "%");
+      } else if (faceMatched === "no") {
+        score += 45;
+        reasons.push("기준 사진과 현재 얼굴의 일치도가 낮아 타인 계정 사용이 의심됩니다. 일치도: " + matchScore + "%");
       }
 
       if (age < 16) {
@@ -624,7 +951,7 @@
 
       if (auth === "fail") {
         score += 30;
-        reasons.push("본인인증에 실패하여 타인 계정 사용 가능성이 있습니다.");
+        reasons.push("본인인증에 실패했거나 완료되지 않아 타인 계정 사용 가능성이 있습니다.");
       }
 
       const ageGap = Math.abs(age - faceAge);
@@ -644,7 +971,7 @@
       let statusClass = "";
       let speedText = "";
 
-      if (license === "no" || age < 16 || faceAge < 16) {
+      if (license === "no" || age < 16 || faceAge < 16 || faceMatched === "no") {
         statusText = "탑승 차단";
         statusClass = "block";
         speedText = "0km/h: 킥보드 잠금";
@@ -652,7 +979,7 @@
         statusText = "탑승 차단";
         statusClass = "block";
         speedText = "0km/h: 킥보드 잠금";
-      } else if (score >= 61) {
+      } else if (score >= 61 || faceMatched === "maybe") {
         statusText = "추가 인증 필요";
         statusClass = "verify";
         speedText = "인증 완료 전까지 주행 불가";
